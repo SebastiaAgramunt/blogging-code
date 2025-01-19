@@ -5,4 +5,4 @@ A repository to hold my examples and projects in the blog [agramunt.me](https://
 
 ## List of supporting code for posts
 
-- Post: [C++ multiple file project](https://agramunt.me/posts/cpp-multifile-project/) [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/cpp-multiplefiles)
+- [C++ multiple file project](https://agramunt.me/posts/cpp-multifile-project/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/cpp-multiplefiles)
