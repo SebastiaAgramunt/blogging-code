@@ -10,3 +10,5 @@ A repository to hold my examples and projects in the blog [agramunt.me](https://
 - [C++ compile external library](https://agramunt.me/posts/cpp-compile-link-external-lib/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/cpp-compile-library)
 - [C++ makefiles](https://agramunt.me/posts/cpp-make) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/cpp-makefile)
 - [Graphs - Depth First Search](https://agramunt.me/posts/depth-first-search) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/graphs-depth-first-search)
+- [Graphs - Breadth First Search](https://agramunt.me/posts/breadth-first-search) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/graphs-breadth-first-search)
+- [Docker images for Python](https://agramunt.me/posts/python-docker/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/python-dockerfiles)
