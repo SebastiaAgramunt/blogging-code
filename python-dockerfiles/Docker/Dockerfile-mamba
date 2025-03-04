@@ -1,0 +1,40 @@
+FROM ubuntu:latest
+
+ARG USERNAME=user
+ARG UID=1000
+ARG GID=1000
+
+# install required packages to compile python
+RUN set -x \
+    && echo "Updating..." \
+    && apt-get upgrade \
+    && apt-get update \
+    && echo "Installing Packages..." \
+    && apt-get install -y \
+    wget 
+
+# Define Miniforge version and install path
+ENV MINIFORGE_PATH=/opt/miniforge
+
+# Download and install Miniforge
+RUN wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O /tmp/Miniforge.sh \
+    && bash /tmp/Miniforge.sh -b -p $MINIFORGE_PATH \
+    && rm /tmp/Miniforge.sh
+
+# Set environment variables for Conda and Mamba
+ENV PATH="$MINIFORGE_PATH/bin:$PATH"
+
+RUN if getent group ${GID} >/dev/null; then \
+        echo "Group with GID ${GID} already exists, using it."; \
+        GROUP_NAME=$(getent group ${GID} | cut -d: -f1); \
+    else \
+        GROUP_NAME=${USERNAME}; \
+        groupadd --gid ${GID} ${GROUP_NAME}; \
+    fi && \
+    useradd --uid ${UID} --gid ${GID} --create-home --shell /bin/bash ${USERNAME}
+
+WORKDIR /home/${USERNAME}
+RUN chown -R ${UID}:${GID} /home/${USERNAME}
+
+USER ${USERNAME}
+CMD ["/bin/bash"]

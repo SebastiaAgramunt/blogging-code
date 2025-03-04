@@ -1,0 +1,35 @@
+FROM ubuntu:latest
+
+ARG USERNAME=user
+ARG UID=1000
+ARG GID=1000
+
+
+# install required packages to compile python
+RUN set -x \
+    && echo "Updating..." \
+    && apt-get upgrade \
+    && apt-get update \
+    && echo "Installing Packages..." \
+    && apt-get install -y \
+    wget \
+    curl
+
+RUN if getent group ${GID} >/dev/null; then \
+        echo "Group with GID ${GID} already exists, using it."; \
+        GROUP_NAME=$(getent group ${GID} | cut -d: -f1); \
+    else \
+        GROUP_NAME=${USERNAME}; \
+        groupadd --gid ${GID} ${GROUP_NAME}; \
+    fi && \
+    useradd --uid ${UID} --gid ${GID} --create-home --shell /bin/bash ${USERNAME}
+
+WORKDIR /home/${USERNAME}
+RUN chown -R ${UID}:${GID} /home/${USERNAME}
+
+USER ${USERNAME}
+
+# install UV on user
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --verbose 
+
+CMD ["/bin/bash"]

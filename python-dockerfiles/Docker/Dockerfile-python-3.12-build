@@ -1,0 +1,55 @@
+FROM ubuntu:latest
+
+ARG USERNAME=user
+ARG UID=1000
+ARG GID=1000
+
+ENV PYTHON_VERSION=3.12.9
+
+# install required packages to compile python
+RUN set -x \
+    && echo "Updating..." \
+    && apt-get upgrade \
+    && apt-get update \
+    && echo "Installing Packages..." \
+    && apt-get install -y \
+    build-essential \
+    zlib1g-dev \
+    libncurses5-dev \
+    libgdbm-dev \
+    libnss3-dev \
+    libssl-dev \
+    libsqlite3-dev \
+    libreadline-dev \
+    libffi-dev curl \
+    libbz2-dev \
+    liblzma-dev \
+    wget
+
+# download and compile python
+RUN cd usr/src && \
+    PYTHON_VERSION_SHORT=${PYTHON_VERSION%.*} && \
+    wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    tar xzf Python-${PYTHON_VERSION}.tgz && \
+    cd Python-${PYTHON_VERSION} && \
+    ./configure --enable-optimizations && \
+    make -j 16 && \
+    make altinstall && \
+    ln -s /usr/local/bin/python${PYTHON_VERSION_SHORT} /usr/bin/python && \
+    cd / && \
+    rm -rf /usr/src/Python-${PYTHON_VERSION}.tgz /usr/src/
+
+RUN if getent group ${GID} >/dev/null; then \
+        echo "Group with GID ${GID} already exists, using it."; \
+        GROUP_NAME=$(getent group ${GID} | cut -d: -f1); \
+    else \
+        GROUP_NAME=${USERNAME}; \
+        groupadd --gid ${GID} ${GROUP_NAME}; \
+    fi && \
+    useradd --uid ${UID} --gid ${GID} --create-home --shell /bin/bash ${USERNAME}
+
+WORKDIR /home/${USERNAME}
+RUN chown -R ${UID}:${GID} /home/${USERNAME}
+
+USER ${USERNAME}
+CMD ["/bin/bash"]
