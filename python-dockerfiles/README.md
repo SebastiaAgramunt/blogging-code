@@ -1,6 +1,6 @@
 # Docker images for Python
 
-Supporting material for blogpost (agramunt.me/posts/python-docker/)[https://agramunt.me/posts/python-docker/].
+Supporting material for blogpost [agramunt.me/posts/python-docker/](https://agramunt.me/posts/python-docker/).
 
 ## Instructions
 
