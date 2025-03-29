@@ -41,8 +41,5 @@ main(){
 
 main "$@"
 
-# export TASK=build_image
-# ./build-run.sh
-
-# export TASK=run_image
-# ./build-run.sh
+# TASK=build_image ./build-run.sh
+# TASK=run_image ./build-run.sh
