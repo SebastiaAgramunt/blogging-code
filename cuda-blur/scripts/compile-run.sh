@@ -63,14 +63,14 @@ compile_exec(){
         ${ROOT_DIR}/build/obj/utils.o \
         -I${ROOT_DIR}/external/lib/opencv/include/opencv4 \
         -I/usr/local/cuda/include \
-        -L${ROOT_DIR}/external/lib/opencv/lib64 \
+        -L${ROOT_DIR}/external/lib/opencv/lib \
         -L/usr/local/cuda/lib64 \
         -lopencv_core \
         -lopencv_highgui \
         -lopencv_imgproc \
         -lopencv_imgcodecs \
         -lcudart \
-        -Wl,-rpath,${ROOT_DIR}/external/lib/opencv/lib64 \
+        -Wl,-rpath,${ROOT_DIR}/external/lib/opencv/lib \
         -o ${ROOT_DIR}/build/bin/main
 }
 
