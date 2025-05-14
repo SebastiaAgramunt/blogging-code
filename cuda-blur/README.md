@@ -9,12 +9,14 @@ Install opencv
 Download image
 
 ```bash
-./scripts/download-image.sh
+./scripts/download-img.sh
 ```
 
 Finally compile and run
 
 
 ```bash
-./scripts/compile-run.sh
+TASK=compile_exec ./scripts/compile-run.sh
+
+./build/bin/main img/raw_img.jpeg
 ```
