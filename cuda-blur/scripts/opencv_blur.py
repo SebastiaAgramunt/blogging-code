@@ -19,7 +19,7 @@ if __name__ == "__main__":
     if img is None:
         raise ValueError("Failed to load image. Check the file path.")
 
-    window=21
+    window=51
     kernel = np.ones((window, window),np.float32)/(window * window)
     filtered_img = cv.filter2D(img, -1, kernel)
     cv.imwrite(str(ROOT_DIR / "blur_output_python.jpeg"), filtered_img)
