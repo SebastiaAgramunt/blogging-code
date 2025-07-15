@@ -13,3 +13,4 @@ A repository to hold my examples and projects in the blog [agramunt.me](https://
 - [Graphs - Breadth First Search](https://agramunt.me/posts/breadth-first-search) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/graphs-breadth-first-search)
 - [Docker images for Python](https://agramunt.me/posts/python-docker/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/python-dockerfiles)
 - [C++ Basic Python Extension](https://agramunt.me/posts/cpp-python-extension/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/cpp-basic-cpp-python-extension)
+- [CUDA Utils](https://agramunt.me/posts/cuda-utils/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/cuda-utils)
