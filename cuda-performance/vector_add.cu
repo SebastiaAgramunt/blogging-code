@@ -16,7 +16,7 @@ __global__ void vectorAdd(const float* a, const float* b, float* c, int n) {
 int main() {
     std::srand(std::time(0));
     std::ofstream csv("timings.csv");
-    csv << "N, Mb, allocateTime(ms), loadTime(ms), calcTime(ms), loadTimeBack(ms), totalTime(ms), cpuTime(ms)\n";
+    csv << "N,Mb,allocateTime(ms),loadTime(ms),calcTime(ms),loadTimeBack(ms),totalTime(ms),cpuTime(ms)\n";
 
     // 2^0 to 2^19 floats
     // each float is 4 bytes, so sizes range from 4B to ~2MB
@@ -32,6 +32,7 @@ int main() {
         134217728,  // 512 MB
         268435456,  // 1 GB
         536870912,  // 2 GB
+        1073741824  // 4 GB
     };
 
     // Warm up CUDA, allocate and free a small array to initialize the GPU
@@ -136,3 +137,5 @@ int main() {
     std::cout << "Timing data saved to timings.csv\n";
     return 0;
 }
+
+// nvcc -O3 -arch=sm_80 vector_add.cu -o vector_add
