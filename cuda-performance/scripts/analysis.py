@@ -7,7 +7,7 @@ import numpy as np
 # df = pd.read_csv("performance_time_threads_256_m_1_dtype_float.csv")
 # df = pd.read_csv("performance_time_threads_256_m_4_dtype_float.csv")
 # df = pd.read_csv("performance_time_threads_256_m_20_dtype_float.csv")
-df = pd.read_csv("performance_time_threads_256_m_40_dtype_float.csv")
+df = pd.read_csv("../outputs/performance_time_threads_256_m_40_dtype_float.csv")
 
 # Use two distinct colors from the viridis colormap
 cmap = plt.cm.viridis

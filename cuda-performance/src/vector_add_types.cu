@@ -5,7 +5,8 @@
 #include <fstream>
 #include <chrono>
 #include <cuda_runtime.h>
-
+#include <string>
+#include <filesystem>
 
 #define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
 void check(cudaError_t err, const char* const func, const char* const file,
@@ -63,22 +64,46 @@ void dummyCalculation(){
     CHECK_CUDA_ERROR(cudaFree(dummy_c));
 }
 
-std::ofstream create_csv(int threadsPerBlock, int m, std::string dtype) {
+
+std::ofstream create_csv(int threadsPerBlock,
+                         int m,
+                         const std::string& dtype) {
+    namespace fs = std::filesystem;
+
+    // Build filename
     std::string filename = "performance_time_threads_" +
                            std::to_string(threadsPerBlock) +
-                           "_m_" + std::to_string(m) + "_dtype_" + dtype + ".csv";
+                           "_m_" + std::to_string(m) +
+                           "_dtype_" + dtype + ".csv";
 
-    std::ofstream csv(filename);
+    // Define "outputs" directory in current working dir
+    fs::path dir_path = fs::current_path() / "outputs";
+
+    // Ensure directory exists
+    if (!fs::exists(dir_path)) {
+        if (!fs::create_directories(dir_path)) {
+            std::cerr << "Error: could not create directory " << dir_path << "\n";
+            std::exit(1);
+        }
+    }
+
+    // Full path
+    fs::path file_path = dir_path / filename;
+
+    // Open file
+    std::ofstream csv(file_path);
     if (!csv.is_open()) {
-        std::cerr << "Error: could not open file " << filename << "\n";
+        std::cerr << "Error: could not open file " << file_path << "\n";
         std::exit(1);
     }
 
+    // Write header
     csv << "N,Mb,allocateTime(ms),loadTime(ms),calcTime(ms),loadTimeBack(ms),"
            "totalTime(ms),cpuTime(ms)\n";
 
     return csv;
 }
+
 
 
 int main(int argc, char **argv){
