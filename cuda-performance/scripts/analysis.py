@@ -22,7 +22,7 @@ ax[0].plot(np.log2(df["N"]), df["cpuTime(ms)"], label="CPU Time", marker='o', co
 ax[0].set_xlabel("Size (N, log2 scale)")
 ax[0].set_ylabel("Time (ms)")
 ax[0].set_xlim(0, 30)
-ax[0].set_ylim(-200, 1000)
+ax[0].set_ylim(-200, 4000)
 ax[0].grid(True, which="both", ls="--", lw=0.5)
 ax[0].legend()
 
@@ -42,8 +42,8 @@ ax[1].plot(np.log2(df["N"]), df["totalTime(ms)"], label="GPU Time", marker='o', 
 ax[1].plot(np.log2(df["N"]), df["cpuTime(ms)"], label="CPU Time", marker='o', color=cpu_color, linewidth=2)
 ax[1].set_xlabel("Size (N, log2 scale)")
 ax[1].set_ylabel("Time (ms)")
-ax[1].set_xlim(20, 30)
-ax[1].set_ylim(-0.2, 600.0)
+ax[1].set_xlim(0, 15)
+ax[1].set_ylim(-0.002, 0.21)
 ax[1].grid(True, which="both", ls="--", lw=0.5)
 ax[1].legend()
 

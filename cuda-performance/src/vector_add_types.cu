@@ -41,13 +41,14 @@ void checkLast(const char* const file, const int line)
 template<typename T>
 __global__ void vectorAdd(const T* a, const T* b, T* c, int n, int m=1) {
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
-    if (idx < n) {
-        // this operation is silly, but read the function docs
-        for(int j = 0; j < m; ++j) {
-            c[idx] = a[idx] + b[idx];
+    if (idx >= n) return;
+        T s = a[idx] + b[idx];
+        T acc = T(0);
+        for (int j = 0; j < m; ++j) {
+            acc = acc + s;                 // loop-carried dependency
         }
+        c[idx] = acc;
     }
-}
 
 // Function to perform a dummy calculation to warm up the GPU
 // This is only used to boot up the GPU and avoid measuring initialization overhead in timing
@@ -170,9 +171,12 @@ int main(int argc, char **argv){
         // CPU calculation timing
         auto cpu_start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < N; ++i) {
-            for(int j = 0; j < m; ++j){
-                h_c_cpu[i] = h_a[i] + h_b[i];
+            double acc = 0;                    // or T acc = 0;
+            double s = h_a[i] + h_b[i];
+            for (int j = 0; j < m; ++j) {
+                acc = acc + s;                 // loop-carried dependency
             }
+            h_c_cpu[i] = acc;
         }
         auto cpu_end = std::chrono::high_resolution_clock::now();
         double cpuTime = std::chrono::duration<double, std::milli>(cpu_end - cpu_start).count();
