@@ -32,7 +32,7 @@ create-dirs(){
     fi
 }
 
-install-openblas(){
+compile-install-openblas(){
     cd ${INSTALL_DIR}/tmp
 
     # download
@@ -59,7 +59,7 @@ install-openblas(){
     fi
 }
 
-install-lapack(){
+compile-install-lapack(){
     cd ${INSTALL_DIR}/tmp
 
     # download
@@ -92,5 +92,5 @@ install-lapack(){
 
 check-requisites
 create-dirs
-install-openblas
-install-lapack
+compile-install-openblas
+compile-install-lapack
