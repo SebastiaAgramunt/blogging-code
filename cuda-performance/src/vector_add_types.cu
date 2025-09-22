@@ -48,7 +48,7 @@ __global__ void vectorAdd(const T* a, const T* b, T* c, int n, int m=1) {
             acc = acc + s;                 // loop-carried dependency
         }
         c[idx] = acc;
-    }
+}
 
 // Function to perform a dummy calculation to warm up the GPU
 // This is only used to boot up the GPU and avoid measuring initialization overhead in timing
@@ -171,10 +171,10 @@ int main(int argc, char **argv){
         // CPU calculation timing
         auto cpu_start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < N; ++i) {
-            double acc = 0;                    // or T acc = 0;
+            double acc = 0;
             double s = h_a[i] + h_b[i];
             for (int j = 0; j < m; ++j) {
-                acc = acc + s;                 // loop-carried dependency
+                acc = acc + s;
             }
             h_c_cpu[i] = acc;
         }
