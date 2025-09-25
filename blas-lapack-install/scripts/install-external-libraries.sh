@@ -95,9 +95,10 @@ compile-install-lapack(){
               -DBUILD_SHARED_LIBS=ON \
               -DLAPACKE=ON \
               -DBLAS_LIBRARIES="${LIB_DIR}/openblas/lib/libopenblas.so" \
-              -DLAPACK_LIBRARIES="${LIB_DIR}/lapack/lib/liblapack.so" \
               -DCMAKE_BUILD_TYPE=Release \
               ..
+
+            cd ..
         fi
 
         # if macOS and arm64
@@ -114,10 +115,10 @@ compile-install-lapack(){
             -DCMAKE_OSX_SYSROOT="$SDKROOT" \
             -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-syslibroot,${SDKROOT}" \
             -DCMAKE_EXE_LINKER_FLAGS="-Wl,-syslibroot,${SDKROOT}"
-
-            cmake --build build -j 8
-            cmake --install build
         fi
+
+        cmake --build build -j 8
+        cmake --install build
         cd ${THIS_DIR}
     fi
 }
