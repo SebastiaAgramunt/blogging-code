@@ -16,6 +16,16 @@ check-requisites(){
         echo "Error: cmake is not installed. Please install cmake first." >&2
         exit 1
     fi
+
+    if ! command -v wget &>/dev/null; then
+        echo "Error: wget is not installed. Please install wget first." >&2
+        exit 1
+    fi
+
+    if ! command -v gfortran &>/dev/null; then
+        echo "Error: gfortran is not installed. Please install gfortran first." >&2
+        exit 1
+    fi
 }
 
 create-dirs(){
@@ -74,8 +84,13 @@ compile-install-lapack(){
 
     cd lapack-${LAPACK_VERSION}
     if [ ! -d build ]; then
-        mkdir -p build && cd build
-        cmake -DCMAKE_INSTALL_PREFIX=${LIB_DIR}/lapack \
+
+        # if linux and x86 architecture
+        if [[ "$(uname)" == "Linux" && "$(uname -m)" == "x86_64" ]]; then
+
+            mkdir -p build && cd build
+
+            cmake -DCMAKE_INSTALL_PREFIX=${LIB_DIR}/lapack \
               -DCBLAS=ON \
               -DBUILD_SHARED_LIBS=ON \
               -DLAPACKE=ON \
@@ -83,9 +98,26 @@ compile-install-lapack(){
               -DLAPACK_LIBRARIES="${LIB_DIR}/lapack/lib/liblapack.so" \
               -DCMAKE_BUILD_TYPE=Release \
               ..
-        
-        make -j 64
-        make install
+        fi
+
+        # if macOS and arm64
+        if [[ "$(uname)" == "Darwin" && "$(uname -m)" == "arm64" ]]; then
+            rm -rf build
+            export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+
+            cmake -S . -B build \
+            -DCMAKE_INSTALL_PREFIX="${LIB_DIR}/lapack" \
+            -DBUILD_SHARED_LIBS=ON -DCBLAS=ON -DLAPACKE=ON \
+            -DCMAKE_C_COMPILER=/usr/bin/clang \
+            -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+            -DCMAKE_Fortran_COMPILER=/opt/homebrew/bin/gfortran \
+            -DCMAKE_OSX_SYSROOT="$SDKROOT" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-syslibroot,${SDKROOT}" \
+            -DCMAKE_EXE_LINKER_FLAGS="-Wl,-syslibroot,${SDKROOT}"
+
+            cmake --build build -j 8
+            cmake --install build
+        fi
         cd ${THIS_DIR}
     fi
 }
