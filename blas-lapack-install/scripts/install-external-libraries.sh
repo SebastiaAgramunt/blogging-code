@@ -113,6 +113,7 @@ compile-install-lapack(){
         cmake --install build
         cd ${THIS_DIR}
     fi
+    rm -rf ${INSTALL_DIR}/tmp
 }
 check-requisites
 create-dirs
