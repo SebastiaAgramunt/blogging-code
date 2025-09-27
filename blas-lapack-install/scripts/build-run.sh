@@ -17,9 +17,13 @@ recreate_dirs(){
 }
 
 compile(){
-    OPENBLAS_INC="${ROOT_DIR}/external/lib/openblas/include/openblas"   # adjust if needed
+    OPENBLAS_INC="${ROOT_DIR}/external/lib/openblas/include/openblas"
     OPENBLAS_LIB="${ROOT_DIR}/external/lib/openblas/lib"
 
+    LAPACKE_INC="${ROOT_DIR}/external/lib/lapack/include"
+    LAPACKE_LIB="${ROOT_DIR}/external/lib/lapack/lib"
+
+    # OPENBLAS example
     # compile object
     g++ -O3 \
         -std=c++17 \
@@ -34,6 +38,25 @@ compile(){
         -lopenblas \
         -Wl,-rpath,${OPENBLAS_LIB} \
         -o ${ROOT_DIR}/build/bin/cblas_example
+
+    # LAPACKE example
+    # compile object
+    g++ -O3 \
+        -std=c++17 \
+        -c ${ROOT_DIR}/src/lapacke_example.cpp \
+        -I${LAPACKE_INC} \
+        -o ${ROOT_DIR}/build/obj/lapacke_example.o
+
+    # # compile binary
+g++ -O3 \
+  "${ROOT_DIR}/build/obj/lapacke_example.o" \
+  -L"${LAPACKE_LIB}" \
+  -L"${OPENBLAS_LIB}" \
+  -llapacke -lopenblas \
+  -Wl,-rpath,"${LAPACKE_LIB}" \
+  -Wl,-rpath,"${OPENBLAS_LIB}" \
+  -o "${ROOT_DIR}/build/bin/lapacke_example"
+
 }
 
 recreate_dirs
