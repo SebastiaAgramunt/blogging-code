@@ -7,13 +7,21 @@
 int main() {
 
     // Simple dot product: x·y
+    std::cout << "======== Example 1: Dot product ========" << std::endl;
+
     std::vector<double> x = {1, 2, 3};
     std::vector<double> y = {4, 5, 6};
+
+    // BLAS double dot operation
     double dot = cblas_ddot(3, x.data(), 1, y.data(), 1);
+
+    // output result.
     std::cout << "dot(x,y) = " << dot << " (expected 32)\n";
 
+
+    std::cout << "======== Example 2: Matrix Multiplication ========" << std::endl;
     // Matrix multiplication
-    // A (2x3), B (3x2) -> C (2x2)
+    // A (MxK), B (KxN) -> C (MxN)
     const int M = 2, K = 3, N = 2;
 
     // Row-major layout
@@ -28,9 +36,11 @@ int main() {
         11, 12
     }; // 3x2
 
+    // C: matrix of zeroes, we won't use it since we weant 
+    // A (MxK), B (KxN) -> C (MxN)
     std::vector<double> C(M * N, 0.0); // 2x2
 
-    // C := alpha * A * B + beta * C
+    // C := alpha * Op(A) * Op(B) + beta * C
     cblas_dgemm(
         CblasRowMajor,    // Matrix order
         CblasNoTrans,     // Transpose matrix A
