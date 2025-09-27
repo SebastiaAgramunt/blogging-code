@@ -36,7 +36,7 @@ int main() {
         11, 12
     }; // 3x2
 
-    // C: matrix of zeroes, we won't use it since we weant 
+    // C: matrix of zeroes, we save the result there
     // A (MxK), B (KxN) -> C (MxN)
     std::vector<double> C(M * N, 0.0); // 2x2
 
