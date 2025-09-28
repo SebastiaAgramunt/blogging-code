@@ -4,12 +4,16 @@ Supporting material for blogpost [https://agramunt.me/posts/blas-lapack/](https:
 
 ## Instructions
 
-Compile python library running
+Compile libraries `blas` and `lapack`
 
 ```bash
 # install blas and lapacke
 ./scripts/install-external-libraries.sh
+```
 
+compile and run the two examples
+
+```bash
 # build examples and run
 ./scripts/build-run.sh
 
