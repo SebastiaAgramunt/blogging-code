@@ -1,4 +1,4 @@
-# BLAS and LAPACK install
+# BLAS and LAPACKE
 
 Supporting material for blogpost [https://agramunt.me/posts/blas-lapack/](https://agramunt.me/posts/blas-lapack/).
 
