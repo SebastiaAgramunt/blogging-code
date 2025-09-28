@@ -48,14 +48,14 @@ compile(){
         -o ${ROOT_DIR}/build/obj/lapacke_example.o
 
     # # compile binary
-g++ -O3 \
-  "${ROOT_DIR}/build/obj/lapacke_example.o" \
-  -L"${LAPACKE_LIB}" \
-  -L"${OPENBLAS_LIB}" \
-  -llapacke -lopenblas \
-  -Wl,-rpath,"${LAPACKE_LIB}" \
-  -Wl,-rpath,"${OPENBLAS_LIB}" \
-  -o "${ROOT_DIR}/build/bin/lapacke_example"
+    g++ -O3 \
+    "${ROOT_DIR}/build/obj/lapacke_example.o" \
+    -L"${LAPACKE_LIB}" \
+    -L"${OPENBLAS_LIB}" \
+    -llapacke -lopenblas \
+    -Wl,-rpath,"${LAPACKE_LIB}" \
+    -Wl,-rpath,"${OPENBLAS_LIB}" \
+    -o "${ROOT_DIR}/build/bin/lapacke_example"
 
 }
 

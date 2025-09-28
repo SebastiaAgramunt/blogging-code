@@ -1,13 +1,12 @@
 // cblas_example.cpp
 #include <iostream>
 #include <vector>
-#include <iomanip>
 #include <cblas.h>
 
 int main() {
 
     // Simple dot product: x·y
-    std::cout << "======== Example 1: Dot product ========" << std::endl;
+    std::cout << "======== Example 1: Dot product (BLAS Level 1) ========" << std::endl;
 
     std::vector<double> x = {1, 2, 3};
     std::vector<double> y = {4, 5, 6};
@@ -19,7 +18,7 @@ int main() {
     std::cout << "dot(x,y) = " << dot << " (expected 32)\n";
 
 
-    std::cout << "======== Example 2: Matrix Multiplication ========" << std::endl;
+    std::cout << "======== Example 2: Matrix Multiplication (BLAS Level 3) ========" << std::endl;
     // Matrix multiplication
     // A (MxK), B (KxN) -> C (MxN)
     const int M = 2, K = 3, N = 2;
@@ -61,7 +60,7 @@ int main() {
     std::cout << "C = A*B:\n";
     for (int i = 0; i < M; ++i) {
         for (int j = 0; j < N; ++j)
-            std::cout << std::setw(6) << C[i * N + j] << " ";
+            std::cout << C[i * N + j] << " ";
         std::cout << "\n";
     }
     // Expected:
