@@ -181,3 +181,5 @@ cython_debug/
 .pypirc
 
 outputs
+# external libraries folder (common pattern used)
+external
