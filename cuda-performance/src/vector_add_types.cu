@@ -44,7 +44,7 @@ __global__ void vectorAdd(const T* a, const T* b, T* c, int n, int m=1) {
     if (idx >= n) return;
         T s = a[idx] + b[idx];
         T acc = T(0);
-        for (int j = 0; j < m; ++j) {
+        for (int j = 0; j < m -1; ++j) {
             acc = acc + s;                 // loop-carried dependency
         }
         c[idx] = acc;
@@ -173,7 +173,7 @@ int main(int argc, char **argv){
         for (int i = 0; i < N; ++i) {
             double acc = 0;
             double s = h_a[i] + h_b[i];
-            for (int j = 0; j < m; ++j) {
+            for (int j = 0; j < m-1; ++j) {
                 acc = acc + s;
             }
             h_c_cpu[i] = acc;
