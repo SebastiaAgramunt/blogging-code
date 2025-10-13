@@ -180,5 +180,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+outputs
 # external libraries folder (common pattern used)
 external
