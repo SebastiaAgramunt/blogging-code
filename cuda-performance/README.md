@@ -13,7 +13,7 @@ Compile the code (all intermediate objects will be placed in `build` directory)
 Execute the benchmark
 
 ```bash
-./script/execute_calculations.sh
+./scripts/execute.sh
 ```
 
 ## Analyze data and generate plots

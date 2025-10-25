@@ -62,6 +62,8 @@ int main(int argc, char **argv) {
     int threads_per_block;       // threads per block
     int m;                       // number of additions to perform
     std::string filename;        // file to save results
+    bool use_cpu = true;         // use cpu by default
+
     using T = float;
 
     // arg parsing
@@ -76,11 +78,17 @@ int main(int argc, char **argv) {
         if (arg == "--output_file" && i + 1 < argc) {
             filename = argv[++i];
         }
+        if (arg == "--use_cpu" && i + 1 < argc){
+            std::string val = argv[++i];
+            use_cpu = (val == "1" || val == "true" || val == "True");
+        }
         if (arg == "--help") {
-            std::cerr << "Usage: " << argv[0] << " --threads_per_block <int> --vector_size <int> --number_of_additions <int> --output_file <string>\n";
+            std::cerr << "Usage: " << argv[0] << " --threads_per_block <int> --vector_size <int> --number_of_additions <int> --use_cpu <bool> --output_file <string>\n";
             return 1;
         }
     }
+
+    std::cout << "threads_per_block: " << threads_per_block << ", number_of_additions: " << m << ", use_cpu:: " << use_cpu << std::endl;
 
     // vector sizes to consider
     long int sizes[] = {
@@ -97,11 +105,6 @@ int main(int argc, char **argv) {
         536870912,  // 2 GB
         1073741824  // 4 GB
     };
-
-
-    // std::cout << "threads_per_block: " << threads_per_block << std::endl;
-    // std::cout << "number_of_additions: " << m << std::endl;
-    // std::cout << "filename: " << filename  << std::endl;
 
     // create file if it doesn't exist
     open_new_csv_file(filename);
@@ -151,17 +154,18 @@ int main(int argc, char **argv) {
 
         // CPU time
         auto cpu_start = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < N; ++i) {
-            double acc = 0;
-            double s = h_a[i] + h_b[i];
-            for (int j = 0; j < m-1; ++j) {
-                acc = acc + s;
+        if(use_cpu){
+            for (int i = 0; i < N; ++i) {
+                double acc = 0;
+                double s = h_a[i] + h_b[i];
+                for (int j = 0; j < m-1; ++j) {
+                    acc = acc + s;
+                }
+                h_c_cpu[i] = acc;
             }
-            h_c_cpu[i] = acc;
         }
         auto cpu_end = std::chrono::high_resolution_clock::now();
         double cpuTime = std::chrono::duration<double, std::milli>(cpu_end - cpu_start).count();
-        std::cout << "N: " << N <<" cpuTime: " << cpuTime << std::endl;
 
         // CUDA times
         // Allocate device memory

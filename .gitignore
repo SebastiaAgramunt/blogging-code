@@ -183,3 +183,6 @@ cython_debug/
 outputs
 # external libraries folder (common pattern used)
 external
+
+# results and analysis
+results
