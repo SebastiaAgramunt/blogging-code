@@ -1,6 +1,4 @@
-
-
-#include<cuBLASMultiply.h>
+#include "cuBLASMultiply.h"
 
 void cuBLASmultiply_call(const float* __restrict__ A,
                     const float* __restrict__ B,
@@ -28,12 +26,12 @@ void cuBLASmultiply_call(const float* __restrict__ A,
         cublasSgemm(handle,
             CUBLAS_OP_N,
             CUBLAS_OP_N,
-            N,
-            M,
-            K,
+            N,               // m = rows of C^T
+            M,               // n = cols of C^T
+            K,               // k
             &alpha,
-            B, N,
-            A, K,
+            B, N,            // matrix A is B, leading dimension N
+            A, K,            // matrix B is A, leading dimension K
             &beta,
             C, N)
         );
