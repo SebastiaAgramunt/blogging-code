@@ -3,7 +3,7 @@
 THIS_DIR=$(dirname "$(realpath "$0")")
 ROOT_DIR=$(dirname ${THIS_DIR})
 
-DIRECTORY=${ROOT_DIR}/data
+DIRECTORY=${ROOT_DIR}/results
 if [ ! -d ${DIRECTORY} ]; then
     mkdir ${DIRECTORY}
 fi
@@ -16,9 +16,7 @@ for ((i=2;i<=512;i+=2)); do
     ${ROOT_DIR}/build/bin/main  --matrix_size ${i} --output_file ${FILENAME}
 done
 
-
-# ${ROOT_DIR}/build/bin/main  --matrix_size 256    --output_file ${FILENAME} # 2^8
-# ${ROOT_DIR}/build/bin/main  --matrix_size 512    --output_file ${FILENAME} # 2^9
+# one last large CPU job before using GPU only
 ${ROOT_DIR}/build/bin/main  --matrix_size 1024   --output_file ${FILENAME} # 2^10
 
 # # now in increments of 1024 without cpu (takes too long!)

@@ -7,6 +7,7 @@
 #include <iomanip>
 #include "simpleMultiply.h"
 #include "tiledMultiply.h"
+#include "cuBLASMultiply.h"
 #include "utils.h"
 
 
@@ -36,6 +37,7 @@ int main(int argc, char **argv) {
         }
     }
 
+    // square matrices
     K = M;
     N = M;
 
@@ -49,7 +51,7 @@ int main(int argc, char **argv) {
 
     // If the file was just created, write the first line
     if (new_file) {
-        file << "M,K,N,memory_usage_MB,allocation_time,copy_time,compute_time_gpu,compute_time_cpu,copy_time_back,free_time,total_time_gpu\n";
+        file << "M,K,N,memory_usage_MB,allocation_time,copy_time,compute_time_gpu,compute_time_cpu,copy_time_back,free_time,total_time_gpu,total_time_gpu_tiled,total_time_gpu_cublas\n";
     }
     file.close();
 
@@ -60,6 +62,9 @@ int main(int argc, char **argv) {
     std::vector<float> h_B(K * N);
     std::vector<float> h_C(M * N);
     std::vector<float> h_C_cpu(M * N);
+
+    // stream to use in CuBLAS
+    cudaStream_t stream = 0;
 
     // Fill A and B with random values
     GenerateRandomMatrices(M, K, N, h_A, h_B);
@@ -77,45 +82,60 @@ int main(int argc, char **argv) {
     // Allocate GPU resources
     float *d_A, *d_B, *d_C;
     start = std::chrono::high_resolution_clock::now();
-    cudaMalloc(&d_A, M * K * sizeof(float));
-    cudaMalloc(&d_B, K * N * sizeof(float));
-    cudaMalloc(&d_C, M * N * sizeof(float));
-    cudaDeviceSynchronize();
+    CHECK_CUDA_ERROR(cudaMalloc(&d_A, M * K * sizeof(float)));
+    CHECK_CUDA_ERROR(cudaMalloc(&d_B, K * N * sizeof(float)));
+    CHECK_CUDA_ERROR(cudaMalloc(&d_C, M * N * sizeof(float)));
+    CHECK_CUDA_ERROR(cudaDeviceSynchronize());
     end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> allocation_time = end - start;
 
     // copy A and B to GPU
     start = std::chrono::high_resolution_clock::now();
-    cudaMemcpy(d_A, h_A.data(), M * K * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, h_B.data(), K * N * sizeof(float), cudaMemcpyHostToDevice);
-    cudaDeviceSynchronize();
+    CHECK_CUDA_ERROR(cudaMemcpy(d_A, h_A.data(), M * K * sizeof(float), cudaMemcpyHostToDevice));
+    CHECK_CUDA_ERROR(cudaMemcpy(d_B, h_B.data(), K * N * sizeof(float), cudaMemcpyHostToDevice));
+    CHECK_CUDA_ERROR(cudaDeviceSynchronize());
     end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> copy_time = end - start;
 
     // Multiply matrices
+    // simple
     start = std::chrono::high_resolution_clock::now();
     simpleMatrixMultiplication_call(d_A, d_B, d_C, M, K, N);
-    // tiledMultiply_call(d_A, d_B, d_C, N, K, M);
+    CHECK_LAST_CUDA_ERROR();
     end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> compute_time_gpu = end - start;
 
+    // tiled kernel
+    start = std::chrono::high_resolution_clock::now();
+    tiledMultiply_call(d_A, d_B, d_C, N, K, M);
+    CHECK_LAST_CUDA_ERROR();
+    end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> compute_time_gpu_tiled = end - start;
+
+    // cublas function
+    start = std::chrono::high_resolution_clock::now();
+    cuBLASmultiply_call(d_A, d_B, d_C, N, K, M, stream);
+    CHECK_LAST_CUDA_ERROR();
+    end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> compute_time_gpu_cublas = end - start;
+
     // copy C from GPU to host
     start = std::chrono::high_resolution_clock::now();
-    cudaMemcpy(h_C.data(), d_C, M * N * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaDeviceSynchronize();
+    CHECK_CUDA_ERROR(cudaMemcpy(h_C.data(), d_C, M * N * sizeof(float), cudaMemcpyDeviceToHost));
+    CHECK_CUDA_ERROR(cudaDeviceSynchronize());
     end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> copy_back_time = end - start;
 
     // Free resources
     start = std::chrono::high_resolution_clock::now();
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    cudaDeviceSynchronize();
+    CHECK_CUDA_ERROR(cudaFree(d_A));
+    CHECK_CUDA_ERROR(cudaFree(d_B));
+    CHECK_CUDA_ERROR(cudaFree(d_C));
+    CHECK_CUDA_ERROR(cudaDeviceSynchronize());
     end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> free_time = end - start;
 
-    // check cpu vs gpu results
+    // check cpu vs gpu results for cuBLAS, the others have been tested manually
     if (use_cpu) {
         for (size_t i = 0; i < h_C.size(); ++i) {
             if (std::abs(h_C[i] - h_C_cpu[i]) > 1e-3) {
@@ -129,6 +149,8 @@ int main(int argc, char **argv) {
     file.open(filename, std::ios::app);
     size_t total_memory = ( h_A.size() * sizeof(float) + h_B.size() * sizeof(float) + h_C.size() * sizeof(float) ) / 1024 / 1024;
     auto total_time_gpu = allocation_time + copy_time + compute_time_gpu + copy_back_time + free_time;
+    auto total_time_gpu_tiled = allocation_time + copy_time + compute_time_gpu_tiled + copy_back_time + free_time;
+    auto total_time_cublas = allocation_time + copy_time + compute_time_gpu_cublas + copy_back_time + free_time;
     file << M << ','
      << K << ','
      << N << ','
@@ -139,7 +161,9 @@ int main(int argc, char **argv) {
      << compute_time_cpu.count() << ','
      << copy_back_time.count() << ','
      << free_time.count() << ','
-     << total_time_gpu.count() << '\n';
+     << total_time_gpu.count() << ',' 
+     << compute_time_gpu_tiled.count() << ','
+     << compute_time_gpu_cublas.count() << '\n';
     file.close();
 
     return 0;
