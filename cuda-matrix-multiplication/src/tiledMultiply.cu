@@ -1,50 +1,64 @@
 #include "tiledMultiply.h"
 
 __global__ void tiledMultiply(const float* __restrict__ A, // M x K
-                                const float* __restrict__ B, // K x N
-                                float* __restrict__ C,       // M x N
-                                std::size_t M,
-                                std::size_t K,
-                                std::size_t N){
+                              const float* __restrict__ B, // K x N
+                              float* __restrict__ C,       // M x N
+                              std::size_t M,
+                              std::size_t K,
+                              std::size_t N) {
 
-    const int row = blockIdx.y * TILE + threadIdx.y; // [0, M)
-    const int col = blockIdx.x * TILE + threadIdx.x; // [0, N)
+    int by = blockIdx.y;
+    int bx = blockIdx.x;
 
-    // +1 padding to mitigate shared-memory bank conflicts
-    __shared__ float As[TILE][TILE + 1];
-    __shared__ float Bs[TILE][TILE + 1];
+    int ty = threadIdx.y;
+    int tx = threadIdx.x;
 
-    float acc = 0.0f;
+    // global row/col this thread is responsible for
+    int i = by * TILE + ty;  // row in C
+    int j = bx * TILE + tx;  // col in C
 
-    // Sweep across K in TILE-sized chunks
-    for (int k0 = 0; k0 < static_cast<int>(K); k0 += TILE) {
-        const int aCol = k0 + threadIdx.x; // along K
-        const int bRow = k0 + threadIdx.y; // along K
+    __shared__ float As[TILE][TILE];
+    __shared__ float Bs[TILE][TILE];
 
-        // Guard each cooperative load
-        As[threadIdx.y][threadIdx.x] =
-            (row < static_cast<int>(M) && aCol < static_cast<int>(K))
-                ? A[row * K + aCol] : 0.0f;
+    float value = 0.0f;
 
-        Bs[threadIdx.y][threadIdx.x] =
-            (bRow < static_cast<int>(K) && col < static_cast<int>(N))
-                ? B[bRow * N + col] : 0.0f;
+    // number of tiles along K
+    int numTiles = (K + TILE - 1) / TILE;
 
+    for (int ph = 0; ph < numTiles; ++ph) {
+        // column in A, row in B that this thread wants to load
+        int aCol = ph * TILE + tx;  // along K
+        int bRow = ph * TILE + ty;  // along K
+
+        // load A tile (row = i, col = aCol)
+        if (i < M && aCol < K)
+            As[ty][tx] = A[i * K + aCol];
+        else
+            As[ty][tx] = 0.0f;
+
+        // load B tile (row = bRow, col = j)
+        if (bRow < K && j < N)
+            Bs[ty][tx] = B[bRow * N + j];
+        else
+            Bs[ty][tx] = 0.0f;
+
+        // sync all threads to make sure the tiles are loaded
         __syncthreads();
 
         #pragma unroll
         for (int t = 0; t < TILE; ++t) {
-            acc += As[threadIdx.y][t] * Bs[t][threadIdx.x];
+            value += As[ty][t] * Bs[t][tx];
         }
 
+        // sync before loading the next tile
         __syncthreads();
     }
 
-    if (row < static_cast<int>(M) && col < static_cast<int>(N)) {
-        C[row * N + col] = acc;
+    // write back only if in-bounds
+    if (i < (int)M && j < (int)N) {
+        C[i * N + j] = value;
     }
 }
-
 
 void tiledMultiply_call(const float* __restrict__ A,
                     const float* __restrict__ B,
