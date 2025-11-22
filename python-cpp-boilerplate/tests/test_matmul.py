@@ -13,8 +13,8 @@ def test_matmul_matches_numpy():
 
     C_np = A @ B
 
-    assert np.allclose(C, C_np), "C and C_np are not equal"
-    
+    assert np.allclose(C, C_np), 'C and C_np are not equal'
+
 
 def test_matvec_random():
     rng = np.random.default_rng(42)

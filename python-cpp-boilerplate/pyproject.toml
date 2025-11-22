@@ -1,3 +1,24 @@
 [build-system]
 requires = ["setuptools>=64", "wheel", "pybind11>=2.10"]
 build-backend = "setuptools.build_meta"
+
+
+[tool.ruff]
+line-length = 99
+
+[tool.ruff.lint]
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle & Warnings
+    "E",
+    "W",
+    # isort for unsorted imports
+    "I001",
+]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = 20
