@@ -22,3 +22,12 @@ quote-style = "single"
 indent-style = "space"
 docstring-code-format = true
 docstring-code-line-length = 20
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+exclude = "^(build/|\\.venv/)"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v"

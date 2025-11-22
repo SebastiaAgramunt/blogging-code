@@ -42,4 +42,6 @@ Using ruff
 ```bash
 .venv/bin/python -m pip install -e ".[test]"
 .venv/bin/ruff format .
+
+.venv/bin/mypy src
 ```

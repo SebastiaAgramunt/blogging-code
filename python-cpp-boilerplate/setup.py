@@ -47,5 +47,5 @@ setup(
     install_requires=[
         'numpy>=1.20',
     ],
-    extras_require={'test': ['pytest', 'ruff']},
+    extras_require={'test': ['pytest', 'ruff', 'mypy', 'pre-commit']},
 )
