@@ -3,7 +3,7 @@
 
 ## Compile and install the package
 
-Create a new package
+Csreate a new package
 
 ```bash
 rm -rf .venv
@@ -32,7 +32,7 @@ Run tests
 
 ```bash
 .venv/bin/python -m pip install -e ".[test]"
-.venv/bin/pytest -v
+.venv/bin/pytest
 ```
 
 ## Linting
@@ -43,5 +43,5 @@ Using ruff
 .venv/bin/python -m pip install -e ".[test]"
 .venv/bin/ruff format .
 
-.venv/bin/mypy src
+.venv/bin/mypy .
 ```
