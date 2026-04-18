@@ -17,20 +17,32 @@ NVCC_FLAGS := $(CXX_FLAGS) -arch=$(ARCH) \
               -Xcompiler -Wall \
               -I. -Iinclude
 
-TARGET := cuda_mma
-SRCS   := main.cu src/kernels.cu src/utils.cu
-HDRS   := include/cuda_check.cuh include/kernels.cuh \
-           include/kernels.cuh include/timer.h include/utils.h
+BIN_DIR   := build/bin
+TARGET    := $(BIN_DIR)/cuda_mma
+TEST      := $(BIN_DIR)/test_correctness
+SRCS      := main.cu src/kernels.cu src/utils.cu src/benchmarks.cu
+TEST_SRCS := test/test_correctness.cu src/kernels.cu src/utils.cu
+HDRS      := include/cuda_check.cuh include/kernels.cuh \
+             include/timer.h include/utils.h include/benchmarks.h
 
-.PHONY: all clean run profile
+.PHONY: all clean run test profile
 
-all: $(TARGET)
+all: $(TARGET) $(TEST)
 
-$(TARGET): $(SRCS) $(HDRS)
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+$(TARGET): $(SRCS) $(HDRS) | $(BIN_DIR)
 	$(NVCC) $(NVCC_FLAGS) -o $@ $(SRCS)
+
+$(TEST): $(TEST_SRCS) $(HDRS) | $(BIN_DIR)
+	$(NVCC) $(NVCC_FLAGS) -o $@ $(TEST_SRCS)
 
 run: $(TARGET)
 	./$(TARGET)
+
+test: $(TEST)
+	./$(TEST)
 
 # Requires Nsight Compute (ncu).
 profile: $(TARGET)
@@ -42,4 +54,4 @@ profile: $(TARGET)
 	    ./$(TARGET)
 
 clean:
-	rm -f $(TARGET)
+	rm -rf build

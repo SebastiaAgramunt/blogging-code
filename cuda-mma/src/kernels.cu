@@ -56,43 +56,124 @@ __global__ void sgemm_coalesced(
 // Tiled version: 1 thread per output element, shared memory for tiles of A and B.
 template <int TILE_SIZE>
 __global__ void sgemm_tiled(
-    size_t M,            // Number of rows in A and C
+    size_t M,             // Number of rows in A and C
     size_t N,             // Number of columns in B and C
     size_t K,             // Number of columns in A and rows in B
     float alpha,       // Scaling factor for the product of A and B
     const float *A,    // [M x K] row-major
     const float *B,    // [K x N] row-major
     float beta,        // Scaling factor for C
-    float *C)         // [M x N] row-major  (in-out: C = alpha*A*B + beta*C)
+    float *C)          // [M x N] row-major  (in-out: C = alpha*A*B + beta*C)
 {
-    __shared__ float sA[TILE_SIZE][TILE_SIZE];
-    __shared__ float sB[TILE_SIZE][TILE_SIZE];
+    // Declaring the tiles 
+    __shared__ float A_tile[TILE_SIZE * TILE_SIZE];
+    __shared__ float B_tile[TILE_SIZE * TILE_SIZE];
 
-    int row = blockIdx.y * TILE_SIZE + threadIdx.y;
-    int col = blockIdx.x * TILE_SIZE + threadIdx.x;
+    // the element of C for this specific thread
+    size_t row = blockIdx.y * TILE_SIZE + threadIdx.y;
+    size_t col = blockIdx.x * TILE_SIZE + threadIdx.x;
 
-    float acc = 0.0f;
+    // we multiply along the K dimension, iterate over this
+    size_t n_tiles = (K + TILE_SIZE -1)/TILE_SIZE;
 
-    // Iterate over tiles along the K dimension.
-    for (size_t t = 0; t < (K + TILE_SIZE - 1) / TILE_SIZE; ++t) {
-        size_t aCol = t * TILE_SIZE + threadIdx.x;  // column of A this thread loads
-        size_t bRow = t * TILE_SIZE + threadIdx.y;  // row    of B this thread loads
+    float acc = .0f;
+    for(size_t tile=0; tile<n_tiles; tile++){
 
-        // Boundary-safe loads: pad with 0 for out-of-bounds tiles.
-        sA[threadIdx.y][threadIdx.x] = (row < M && aCol < K) ? A[row * K + aCol] : 0.0f;
-        sB[threadIdx.y][threadIdx.x] = (bRow < K && col < N) ? B[bRow * N + col] : 0.0f;
+        // get tile col from A and tile row for B
+        size_t aCol = tile * TILE_SIZE + threadIdx.x;
+        size_t bRow = tile * TILE_SIZE + threadIdx.y;
+
+        A_tile[threadIdx.y * TILE_SIZE + threadIdx.x] = (row < M && aCol < K) ? A[row * K + aCol] : 0.0f;
+        B_tile[threadIdx.y * TILE_SIZE + threadIdx.x] = (bRow < K && col < N) ? B[bRow * N + col] : 0.0f;
+
         __syncthreads();
 
-        // Accumulate partial dot product from shared memory.
         #pragma unroll
         for (int i = 0; i < TILE_SIZE; ++i)
-            acc += sA[threadIdx.y][i] * sB[i][threadIdx.x];
+            acc += A_tile[threadIdx.y * TILE_SIZE + i] * B_tile[i * TILE_SIZE + threadIdx.x];
         __syncthreads();
     }
 
     if (row < M && col < N)
         C[row * N + col] = alpha * acc + beta * C[row * N + col];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // Tiled version: 1 thread per output element, shared memory for tiles of A and B.
+// template <int TILE_SIZE>
+// __global__ void sgemm_tiled(
+//     size_t M,            // Number of rows in A and C
+//     size_t N,             // Number of columns in B and C
+//     size_t K,             // Number of columns in A and rows in B
+//     float alpha,       // Scaling factor for the product of A and B
+//     const float *A,    // [M x K] row-major
+//     const float *B,    // [K x N] row-major
+//     float beta,        // Scaling factor for C
+//     float *C)         // [M x N] row-major  (in-out: C = alpha*A*B + beta*C)
+// {
+//     __shared__ float sA[TILE_SIZE][TILE_SIZE];
+//     __shared__ float sB[TILE_SIZE][TILE_SIZE];
+
+//     int row = blockIdx.y * TILE_SIZE + threadIdx.y;
+//     int col = blockIdx.x * TILE_SIZE + threadIdx.x;
+
+//     float acc = 0.0f;
+
+//     // Iterate over tiles along the K dimension.
+//     for (size_t t = 0; t < (K + TILE_SIZE - 1) / TILE_SIZE; ++t) {
+//         size_t aCol = t * TILE_SIZE + threadIdx.x;  // column of A this thread loads
+//         size_t bRow = t * TILE_SIZE + threadIdx.y;  // row    of B this thread loads
+
+//         // Boundary-safe loads: pad with 0 for out-of-bounds tiles.
+//         sA[threadIdx.y][threadIdx.x] = (row < M && aCol < K) ? A[row * K + aCol] : 0.0f;
+//         sB[threadIdx.y][threadIdx.x] = (bRow < K && col < N) ? B[bRow * N + col] : 0.0f;
+//         __syncthreads();
+
+//         // Accumulate partial dot product from shared memory.
+//         #pragma unroll
+//         for (int i = 0; i < TILE_SIZE; ++i)
+//             acc += sA[threadIdx.y][i] * sB[i][threadIdx.x];
+//         __syncthreads();
+//     }
+
+//     if (row < M && col < N)
+//         C[row * N + col] = alpha * acc + beta * C[row * N + col];
+// }
 
 template __global__ void sgemm_tiled<16>(size_t M, size_t N, size_t K, float alpha,
                                           const float *A, const float *B,
