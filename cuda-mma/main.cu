@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 
 #include "utils.h"
 #include "benchmarks.h"
@@ -11,12 +12,16 @@ using BenchmarkFn = float (*)(int, const float*, const float*);
 
 static void run_sweep(const char* label, BenchmarkFn fn,
                       const int* sizes, int n_sizes,
-                      const float* h_A, const float* h_B)
+                      const float* h_A, const float* h_B,
+                      const char* csv_path)
 {
     printf("%s roofline sweep (%d iters, %d warmup)\n", label, ITERS, WARMUP);
     printf("%-6s  %9s  %9s  %11s  %9s\n",
            "Size", "Time(ms)", "GFLOP/s", "BW(GB/s)", "AI(F/B)");
     printf("------  ---------  ---------  -----------  ---------\n");
+
+    FILE* csv = fopen(csv_path, "w");
+    fprintf(csv, "size,time_ms,gflops,bandwidth_gbs,arithmetic_intensity\n");
 
     for (int i = 0; i < n_sizes; ++i) {
         int S = sizes[i];
@@ -34,12 +39,17 @@ static void run_sweep(const char* label, BenchmarkFn fn,
 
         printf("%-6d  %9.3f  %9.1f  %11.1f  %9.2f\n",
                S, avg_ms, gflops, bandwidth, ai);
+        fprintf(csv, "%d,%.3f,%.3f,%.3f,%.4f\n",
+                S, avg_ms, gflops, bandwidth, ai);
     }
     printf("\n");
+    fclose(csv);
 }
 
 int main() {
     srand(42);
+
+    std::filesystem::create_directories("output");
 
     const int sizes[] = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768};
     const int N_SIZES = sizeof(sizes) / sizeof(sizes[0]);
@@ -50,9 +60,9 @@ int main() {
     fill_random(h_A, S_max * S_max);
     fill_random(h_B, S_max * S_max);
 
-    run_sweep("Naive",     benchmark_naive,     sizes, N_SIZES, h_A, h_B);
-    run_sweep("Tiled",     benchmark_tiled,     sizes, N_SIZES, h_A, h_B);
-    run_sweep("Coalesced", benchmark_coalesced, sizes, N_SIZES, h_A, h_B);
+    run_sweep("Naive",     benchmark_naive,     sizes, N_SIZES, h_A, h_B, "output/naive.csv");
+    run_sweep("Tiled",     benchmark_tiled,     sizes, N_SIZES, h_A, h_B, "output/tiled.csv");
+    run_sweep("Coalesced", benchmark_coalesced, sizes, N_SIZES, h_A, h_B, "output/coalesced.csv");
 
     delete[] h_A;
     delete[] h_B;
