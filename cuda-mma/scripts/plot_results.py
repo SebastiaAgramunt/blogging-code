@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import os
+from path import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "output")
+OUTPUT_DIR = Path(__file__).parent.parent / "output"
 
 kernels = {
     "Naive":     "naive.csv",
@@ -13,12 +13,13 @@ kernels = {
 }
 
 def load(filename):
-    path = os.path.join(OUTPUT_DIR, filename)
-    if not os.path.exists(path):
+    path = OUTPUT_DIR / filename
+    if not path.exists():
         return None
     return pd.read_csv(path)
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+fig.suptitle("CUDA SGEMM Roofline Analysis - Nvidia GPU A10")
 ax_gflops, ax_bw, ax_ai = axes
 
 for label, filename in kernels.items():
@@ -48,7 +49,7 @@ ax_ai.set_title("Arithmetic Intensity")
 ax_ai.set_ylabel("FLOP/Byte")
 
 fig.tight_layout()
-out_path = os.path.join(OUTPUT_DIR, "roofline.png")
+out_path = OUTPUT_DIR / "roofline.png"
 plt.savefig(out_path, dpi=150)
 print(f"Saved {out_path}")
 plt.show()

@@ -100,12 +100,11 @@ float benchmark_coalesced(int S, const float* h_A, const float* h_B)
     CUDA_CHECK(cudaMemcpy(d_B, h_B, szB, cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemset(d_C, 0, szC));
 
-    dim3 block(32 * 32);
-    dim3 grid((S + block.x / 16 - 1) / (block.x / 16),
-              (S + block.x / 16 - 1) / (block.x / 16));
+    dim3 gridDim(CEIL_DIV(S, 32), CEIL_DIV(S, 32));
+    dim3 blockDim(32 * 32);
 
     for (int i = 0; i < WARMUP; ++i)
-        sgemm_coalesced<16><<<grid, block>>>(S, S, S, 1.0f, d_A, d_B, 0.0f, d_C);
+        sgemm_coalesced<32><<<gridDim, blockDim>>>(S, S, S, 1.0f, d_A, d_B, 0.0f, d_C);
     CUDA_CHECK(cudaDeviceSynchronize());
 
     GpuTimer timer;
@@ -113,7 +112,7 @@ float benchmark_coalesced(int S, const float* h_A, const float* h_B)
     for (int i = 0; i < ITERS; ++i) {
         CUDA_CHECK(cudaMemset(d_C, 0, szC));
         timer.start();
-        sgemm_coalesced<16><<<grid, block>>>(S, S, S, 1.0f, d_A, d_B, 0.0f, d_C);
+        sgemm_coalesced<32><<<gridDim, blockDim>>>(S, S, S, 1.0f, d_A, d_B, 0.0f, d_C);
         total_ms += timer.stop();
     }
 
