@@ -33,7 +33,7 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
 $(TARGET): $(SRCS) $(HDRS) | $(BIN_DIR)
-	$(NVCC) $(NVCC_FLAGS) -o $@ $(SRCS)
+	$(NVCC) $(NVCC_FLAGS) -o $@ $(SRCS) -lcublas -lopenblas -Xlinker -rpath,/usr/local/cuda/targets/x86_64-linux/lib
 
 $(TEST): $(TEST_SRCS) $(HDRS) | $(BIN_DIR)
 	$(NVCC) $(NVCC_FLAGS) -o $@ $(TEST_SRCS)
