@@ -60,15 +60,15 @@ int main() {
     fill_random(h_A, S_max * S_max);
     fill_random(h_B, S_max * S_max);
 
-    // run_sweep("Naive",     benchmark_naive,     sizes, N_SIZES, h_A, h_B, "output/naive.csv");
-    // run_sweep("Tiled",     benchmark_tiled,     sizes, N_SIZES, h_A, h_B, "output/tiled.csv");
-    // run_sweep("Coalesced", benchmark_coalesced, sizes, N_SIZES, h_A, h_B, "output/coalesced.csv");
+    run_sweep("Naive",     benchmark_naive,     sizes, N_SIZES, h_A, h_B, "output/naive.csv");
+    run_sweep("Tiled",     benchmark_tiled,     sizes, N_SIZES, h_A, h_B, "output/tiled.csv");
+    run_sweep("Coalesced", benchmark_coalesced, sizes, N_SIZES, h_A, h_B, "output/coalesced.csv");
     run_sweep("cuBLAS",    benchmark_cublas,    sizes, N_SIZES, h_A, h_B, "output/cublas.csv");
 
     // CBLAS runs on CPU; cap at 4096 to keep runtime reasonable
-    const int cblas_sizes[] = {128, 256, 512, 1024, 2048, 4096};
+    const int cblas_sizes[] = {128, 256, 512, 1024, 2048, 4096, 8192};
     const int N_CBLAS = sizeof(cblas_sizes) / sizeof(cblas_sizes[0]);
-    // run_sweep("CBLAS",     benchmark_cblas,     cblas_sizes, N_CBLAS, h_A, h_B, "output/cblas.csv");
+    run_sweep("CBLAS",     benchmark_cblas,     cblas_sizes, N_CBLAS, h_A, h_B, "output/cblas.csv");
 
     delete[] h_A;
     delete[] h_B;
