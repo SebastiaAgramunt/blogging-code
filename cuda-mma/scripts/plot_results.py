@@ -11,6 +11,7 @@ kernels = {
     "Tiled":     "tiled.csv",
     "Coalesced": "coalesced.csv",
     "cuBLAS":    "cublas.csv",
+    "Coarsened": "coarsened.csv",
     "CBLAS":     "cblas.csv",
 }
 

@@ -36,3 +36,17 @@ __global__ void sgemm_tiled(
     const float *B,    // [K x N] row-major
     float beta,        // Scaling factor for C
     float *C);         // [M x N] row-major  (in-out: C = alpha*A*B + beta*C)
+
+
+// Thread-coarsened tiling: each thread computes TM consecutive rows of one C column.
+// Block tile BM×BN, K-tile BK. Threads per block: BM*BN/TM.
+template <int BM, int BN, int BK, int TM>
+__global__ void sgemm_coarsened(
+    size_t M,
+    size_t N,
+    size_t K,
+    float alpha,
+    const float *A,    // [M x K] row-major
+    const float *B,    // [K x N] row-major
+    float beta,
+    float *C);         // [M x N] row-major  (in-out: C = alpha*A*B + beta*C)

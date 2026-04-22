@@ -64,6 +64,7 @@ int main() {
     run_sweep("Tiled",     benchmark_tiled,     sizes, N_SIZES, h_A, h_B, "output/tiled.csv");
     run_sweep("Coalesced", benchmark_coalesced, sizes, N_SIZES, h_A, h_B, "output/coalesced.csv");
     run_sweep("cuBLAS",    benchmark_cublas,    sizes, N_SIZES, h_A, h_B, "output/cublas.csv");
+    run_sweep("Coarsened", benchmark_coarsened, sizes, N_SIZES, h_A, h_B, "output/coarsened.csv");
 
     // CBLAS runs on CPU; cap at 4096 to keep runtime reasonable
     const int cblas_sizes[] = {128, 256, 512, 1024, 2048, 4096, 8192};

@@ -217,3 +217,43 @@ float benchmark_cblas(int S, const float* h_A, const float* h_B)
     delete[] h_C;
     return total_ms / ITERS;
 }
+
+float benchmark_coarsened(int S, const float* h_A, const float* h_B)
+{
+    constexpr int BM = 64, BN = 64, BK = 8, TM = 8;
+
+    size_t szA = (size_t)S * S * sizeof(float);
+    size_t szB = (size_t)S * S * sizeof(float);
+    size_t szC = (size_t)S * S * sizeof(float);
+
+    float *d_A, *d_B, *d_C;
+    CUDA_CHECK(cudaMalloc(&d_A, szA));
+    CUDA_CHECK(cudaMalloc(&d_B, szB));
+    CUDA_CHECK(cudaMalloc(&d_C, szC));
+
+    CUDA_CHECK(cudaMemcpy(d_A, h_A, szA, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_B, h_B, szB, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemset(d_C, 0, szC));
+
+    dim3 gridDim(CEIL_DIV(S, BN), CEIL_DIV(S, BM));
+    dim3 blockDim(BM * BN / TM);   // 512 threads
+
+    for (int i = 0; i < WARMUP; ++i)
+        sgemm_coarsened<BM, BN, BK, TM><<<gridDim, blockDim>>>(S, S, S, 1.0f, d_A, d_B, 0.0f, d_C);
+    CUDA_CHECK(cudaDeviceSynchronize());
+
+    GpuTimer timer;
+    float total_ms = 0.0f;
+    for (int i = 0; i < ITERS; ++i) {
+        CUDA_CHECK(cudaMemset(d_C, 0, szC));
+        timer.start();
+        sgemm_coarsened<BM, BN, BK, TM><<<gridDim, blockDim>>>(S, S, S, 1.0f, d_A, d_B, 0.0f, d_C);
+        total_ms += timer.stop();
+    }
+
+    CUDA_CHECK(cudaFree(d_A));
+    CUDA_CHECK(cudaFree(d_B));
+    CUDA_CHECK(cudaFree(d_C));
+
+    return total_ms / ITERS;
+}
