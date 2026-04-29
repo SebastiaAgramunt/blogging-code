@@ -136,6 +136,18 @@ float benchmark_coalesced(int S, const float* h_A, const float* h_B)
     return total_ms / ITERS;
 }
 
+// Persistent handle for cuBLAS
+static cublasHandle_t cublas_handle()
+{
+    static cublasHandle_t h = []() {
+        cublasHandle_t handle;
+        CUBLAS_CHECK(cublasCreate(&handle));
+        CUBLAS_CHECK(cublasSetMathMode(handle, CUBLAS_TF32_TENSOR_OP_MATH));
+        return handle;
+    }();
+    return h;
+}
+
 float benchmark_cublas(int S, const float* h_A, const float* h_B)
 {
     size_t szA = (size_t)S * S * sizeof(float);
@@ -151,8 +163,7 @@ float benchmark_cublas(int S, const float* h_A, const float* h_B)
     CUDA_CHECK(cudaMemcpy(d_B, h_B, szB, cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemset(d_C, 0, szC));
 
-    cublasHandle_t handle;
-    CUBLAS_CHECK(cublasCreate(&handle));
+    cublasHandle_t handle = cublas_handle();
 
     // cuBLAS is column-major. For row-major C=A*B, use the identity
     // C^T = B^T * A^T, so pass B first with leading dimension S.
@@ -185,7 +196,6 @@ float benchmark_cublas(int S, const float* h_A, const float* h_B)
         total_ms += timer.stop();
     }
 
-    CUBLAS_CHECK(cublasDestroy(handle));
     CUDA_CHECK(cudaFree(d_A));
     CUDA_CHECK(cudaFree(d_B));
     CUDA_CHECK(cudaFree(d_C));

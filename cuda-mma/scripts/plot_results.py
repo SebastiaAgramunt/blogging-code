@@ -13,6 +13,7 @@ kernels = {
     "Tiled":     "tiled.csv",
     "Coarsened": "coarsened.csv",
     "cuBLAS":    "cublas.csv",
+    "CUTLASS":   "cutlass.csv",
 }
 
 colors = {
@@ -21,7 +22,8 @@ colors = {
     "Tiled":     "C2",
     "Coarsened": "C3",
     "cuBLAS":    "C4",
-    "cBLAS":     "C5",  # C0–C4 used above
+    "cBLAS":     "C6",
+    "CUTLASS":   "C5",
 }
 
 def load(filename):

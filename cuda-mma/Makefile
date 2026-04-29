@@ -11,16 +11,19 @@ CXX_FLAGS := -std=c++17 -O3
 # Override on the command line: make ARCH=sm_75
 ARCH      ?= sm_80
 
+CUTLASS_DIR := vendor/cutlass
+
 NVCC_FLAGS := $(CXX_FLAGS) -arch=$(ARCH) \
               -rdc=true \
               --generate-line-info \
               -Xcompiler -Wall \
-              -I. -Iinclude
+              -diag-suppress 20013,20015 \
+              -I. -Iinclude -I$(CUTLASS_DIR)/include
 
 BIN_DIR   := build/bin
 TARGET    := $(BIN_DIR)/cuda_mma
 TEST      := $(BIN_DIR)/test_correctness
-SRCS      := main.cu src/kernels.cu src/utils.cu src/benchmarks.cu
+SRCS      := main.cu src/kernels.cu src/utils.cu src/benchmarks.cu src/benchmark_cutlass.cu
 TEST_SRCS := test/test_correctness.cu src/kernels.cu src/utils.cu
 HDRS      := include/cuda_check.cuh include/kernels.cuh \
              include/timer.h include/utils.h include/benchmarks.h
