@@ -32,7 +32,7 @@ def load(filename):
         return None
     return pd.read_csv(path)
 
-fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+fig, axes = plt.subplots(2, 1, figsize=(8, 12))
 fig.suptitle("CUDA SGEMM Roofline Analysis - Nvidia GPU A100")
 ax_gflops, ax_bw = axes
 
