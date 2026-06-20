@@ -17,16 +17,22 @@ __global__ void sgemm_naive(
     float *C)                    // [M x N] row-major  (in-out: C = alpha*A*B + beta*C)
     {                   
     
-    int row = blockIdx.y * blockDim.y + threadIdx.y;  // 0 .. M-1
-    int col = blockIdx.x * blockDim.x + threadIdx.x;  // 0 .. N-1
+    const uint x = blockIdx.x * blockDim.x + threadIdx.x;  // 0 .. M-1 (Rows of C)
+    const uint y = blockIdx.y * blockDim.y + threadIdx.y;  // 0 .. N-1 (Columns of C)
 
-    if (row >= M || col >= N) return;
+    // Warp access e.g. warp 0:
+    // x is consecutive for threads 0..31, y is the same for threads 0..31
+    // each warp accesses a column of C, with non-coalesced accesses to A and C, but broadcast access to B
+    // Ref: https://siboehm.com/articles/22/CUDA-MMM
+
+    if (x >= M || y >= N) return;
 
     float acc = 0.0f;
-    for (size_t i = 0; i < K; ++i)
-        acc += A[row * K + i] * B[i * N + col];
+    for (size_t i = 0; i < K; ++i){
+        acc += A[x * K + i] * B[i * N + y];
+    }
 
-    C[row * N + col] = alpha * acc + beta * C[row * N + col];
+    C[x * N + y] = alpha * acc + beta * C[x * N + y];
 }
 
 
@@ -41,16 +47,23 @@ __global__ void sgemm_coalesced(
     const float *B,
     float beta,
     float *C) {
-  const int cRow = blockIdx.x * BLOCKSIZE + (threadIdx.x / BLOCKSIZE);
-  const int cCol = blockIdx.y * BLOCKSIZE + (threadIdx.x % BLOCKSIZE);
 
-  if (cRow < M && cCol < N) {
-    float tmp = 0.0;
-    for (size_t i = 0; i < K; ++i) {
-      tmp += A[cRow * K + i] * B[i * N + cCol];
+    const uint x = blockIdx.x * BLOCKSIZE + (threadIdx.x / BLOCKSIZE); // 0 .. M-1 (Rows of C)
+    const uint y = blockIdx.y * BLOCKSIZE + (threadIdx.x % BLOCKSIZE); // 0 .. N-1 (Columns of C)
+
+    // Warp access e.g. warp 0:
+    // x is the same for threads 0..31, y is consecutive for threads 0..31
+    // each warp accesses a BLOCKSIZE (32) tile of C, with coalesced accesses to A and C but broadcast acces to B
+    // Ref: https://siboehm.com/articles/22/CUDA-MMM
+
+    if (x >= M || y >= N) return;
+
+    float acc = 0.0f;
+    for (size_t i = 0; i < K; ++i){
+        acc += A[x * K + i] * B[i * N + y];
     }
-    C[cRow * N + cCol] = alpha * tmp + beta * C[cRow * N + cCol];
-  }
+
+    C[x * N + y] = alpha * acc + beta * C[x * N + y];
 }
 
 // Tiled version: 1 thread per output element, shared memory for tiles of A and B.

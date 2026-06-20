@@ -76,38 +76,54 @@ plt.savefig(out_path, dpi=150)
 print(f"Saved {out_path}")
 plt.show()
 
+def plot_comparison(series, title, out_name):
+    fig, ax = plt.subplots(figsize=(7, 5))
+    fig.suptitle(title)
+
+    for label, filename in series.items():
+        df = load(filename)
+        if df is None:
+            print(f"Warning: {filename} not found, skipping.")
+            continue
+        ax.plot(df["size"], df["gflops"], marker="o", label=label, color=colors[label])
+
+    ax.set_xscale("log", base=2)
+    ax.set_yscale("log")
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x)}"))
+    ax.set_xlabel("Matrix size (S×S)")
+    ax.set_ylabel("GFLOP/s")
+    ax.set_title("Throughput")
+    ax.legend()
+    ax.grid(True, which="both", linestyle="--", linewidth=0.5)
+
+    sec = ax.secondary_xaxis("top", functions=(lambda x: x / 8 * 1e6, lambda x: x * 8 / 1e6))
+    sec.set_xscale("log", base=2)
+    sec.xaxis.set_major_formatter(ticker.FuncFormatter(ai_fmt))
+    sec.set_xlabel("Arithmetic Intensity (FLOP/MB)")
+
+    fig.tight_layout()
+    out_path = OUTPUT_DIR / out_name
+    plt.savefig(out_path, dpi=150)
+    print(f"Saved {out_path}")
+    plt.show()
+
 # --- Naive vs cBLAS throughput comparison ---
-naive_vs_cblas = {
-    "Naive": "naive.csv",
-    "cBLAS": "cblas.csv",
-}
+plot_comparison(
+    {"Naive": "naive.csv", "cBLAS": "cblas.csv"},
+    "SGEMM Roofline Analysis - Nvidia GPU A100 vs AMD EPYC 7J13 64-Core",
+    "roofline_naive_cblas.png",
+)
 
-fig2, ax2 = plt.subplots(figsize=(7, 5))
-fig2.suptitle("SGEMM Roofline Analysis - Nvidia GPU A100 vs AMD EPYC 7J13 64-Core")
+# --- Coalesced vs Tiled throughput comparison ---
+plot_comparison(
+    {"Coalesced": "coalesced.csv", "Tiled": "tiled.csv"},
+    "SGEMM Roofline Analysis - Nvidia GPU A100",
+    "roofline_coalesced_tiled.png",
+)
 
-for label, filename in naive_vs_cblas.items():
-    df = load(filename)
-    if df is None:
-        print(f"Warning: {filename} not found, skipping.")
-        continue
-    ax2.plot(df["size"], df["gflops"], marker="o", label=label, color=colors[label])
-
-ax2.set_xscale("log", base=2)
-ax2.set_yscale("log")
-ax2.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x)}"))
-ax2.set_xlabel("Matrix size (S×S)")
-ax2.set_ylabel("GFLOP/s")
-ax2.set_title("Throughput")
-ax2.legend()
-ax2.grid(True, which="both", linestyle="--", linewidth=0.5)
-
-sec2 = ax2.secondary_xaxis("top", functions=(lambda x: x / 8 * 1e6, lambda x: x * 8 / 1e6))
-sec2.set_xscale("log", base=2)
-sec2.xaxis.set_major_formatter(ticker.FuncFormatter(ai_fmt))
-sec2.set_xlabel("Arithmetic Intensity (FLOP/MB)")
-
-fig2.tight_layout()
-out_path2 = OUTPUT_DIR / "roofline_naive_cblas.png"
-plt.savefig(out_path2, dpi=150)
-print(f"Saved {out_path2}")
-plt.show()
+# --- Naive vs Coalesced throughput comparison ---
+plot_comparison(
+    {"Naive": "naive.csv", "Coalesced": "coalesced.csv"},
+    "SGEMM Roofline Analysis - Nvidia GPU A100",
+    "roofline_naive_coalesced.png",
+)
