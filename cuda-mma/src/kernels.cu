@@ -83,8 +83,8 @@ __global__ void sgemm_tiled(
     __shared__ float B_tile[TILE_SIZE * TILE_SIZE];
 
     // the element of C for this specific thread
-    size_t row = blockIdx.y * TILE_SIZE + threadIdx.y;
-    size_t col = blockIdx.x * TILE_SIZE + threadIdx.x;
+    size_t y = blockIdx.y * TILE_SIZE + threadIdx.y; // Rows of C
+    size_t x = blockIdx.x * TILE_SIZE + threadIdx.x; // Columns of C
 
     // we multiply along the K dimension, iterate over this
     size_t n_tiles = (K + TILE_SIZE -1)/TILE_SIZE;
@@ -96,8 +96,8 @@ __global__ void sgemm_tiled(
         size_t aCol = tile * TILE_SIZE + threadIdx.x;
         size_t bRow = tile * TILE_SIZE + threadIdx.y;
 
-        A_tile[threadIdx.y * TILE_SIZE + threadIdx.x] = (row < M && aCol < K) ? A[row * K + aCol] : 0.0f;
-        B_tile[threadIdx.y * TILE_SIZE + threadIdx.x] = (bRow < K && col < N) ? B[bRow * N + col] : 0.0f;
+        A_tile[threadIdx.y * TILE_SIZE + threadIdx.x] = (y < M && aCol < K) ? A[y * K + aCol] : 0.0f;
+        B_tile[threadIdx.y * TILE_SIZE + threadIdx.x] = (bRow < K && x < N) ? B[bRow * N + x] : 0.0f;
 
         __syncthreads();
 
@@ -107,8 +107,8 @@ __global__ void sgemm_tiled(
         __syncthreads();
     }
 
-    if (row < M && col < N)
-        C[row * N + col] = alpha * acc + beta * C[row * N + col];
+    if (y < M && x < N)
+        C[y * N + x] = alpha * acc + beta * C[y * N + x];
 }
 
 template __global__ void sgemm_tiled<16>(size_t M, size_t N, size_t K, float alpha,

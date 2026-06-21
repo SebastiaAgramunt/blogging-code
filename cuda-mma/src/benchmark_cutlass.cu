@@ -18,7 +18,7 @@ using CutlassGemm = cutlass::gemm::device::Gemm<
     cutlass::tfloat32_t, cutlass::layout::RowMajor,   // A (tf32 ~ float with 10-bit mantissa)
     cutlass::tfloat32_t, cutlass::layout::RowMajor,   // B
     float,               cutlass::layout::RowMajor,   // C / D (full float output)
-    float,                                             // accumulator
+    float,                                            // accumulator
     cutlass::arch::OpClassTensorOp,                   // TF32 tensor cores
     cutlass::arch::Sm80,                              // Ampere
     cutlass::gemm::GemmShape<128, 128, 32>,           // threadblock tile

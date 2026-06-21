@@ -127,3 +127,17 @@ plot_comparison(
     "SGEMM Roofline Analysis - Nvidia GPU A100",
     "roofline_naive_coalesced.png",
 )
+
+# --- Tiled vs cuBLAS throughput comparison ---
+plot_comparison(
+    {"Tiled": "tiled.csv", "cuBLAS": "cublas.csv"},
+    "SGEMM Roofline Analysis - Nvidia GPU A100",
+    "roofline_tiled_cublas.png",
+)
+
+# --- cuBLAS vs CUTLASS throughput comparison ---
+plot_comparison(
+    {"cuBLAS": "cublas.csv", "CUTLASS": "cutlass.csv"},
+    "SGEMM Roofline Analysis - Nvidia GPU A100",
+    "roofline_cublas_cutlass.png",
+)
