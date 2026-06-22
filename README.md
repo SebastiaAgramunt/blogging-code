@@ -16,3 +16,4 @@ A repository to hold my examples and projects in the blog [agramunt.me](https://
 - [CUDA Utils](https://agramunt.me/posts/cuda-utils/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/cuda-utils)
 - [CUDA Performance](https://agramunt.me/posts/cuda-performance/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/cuda-performance)
 - [BLAS and LAPACKE](https://agramunt.me/posts/blas-lapack/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/blas-lapacke)
+- [CUDA GMMA and Roofline model](https://agramunt.me/posts/posts/cuda-mma/) - [Code](https://github.com/SebastiaAgramunt/blogging-code/tree/main/cuda-mma)
