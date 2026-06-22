@@ -13,7 +13,7 @@ kernels = {
     "Tiled":     "tiled.csv",
     "Coarsened": "coarsened.csv",
     "cuBLAS":    "cublas.csv",
-    "CUTLASS":   "cutlass.csv",
+    "CUTLASS":   "cutlass_fp32.csv",
 }
 
 colors = {
@@ -137,7 +137,7 @@ plot_comparison(
 
 # --- cuBLAS vs CUTLASS throughput comparison ---
 plot_comparison(
-    {"cuBLAS": "cublas.csv", "CUTLASS": "cutlass.csv"},
+    {"cuBLAS": "cublas.csv", "CUTLASS": "cutlass_fp32.csv"},
     "SGEMM Roofline Analysis - Nvidia GPU A100",
     "roofline_cublas_cutlass.png",
 )

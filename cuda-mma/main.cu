@@ -13,7 +13,9 @@ using BenchmarkFn = float (*)(int, const float*, const float*);
 static void run_sweep(const char* label, BenchmarkFn fn,
                       const int* sizes, int n_sizes,
                       const float* h_A, const float* h_B,
-                      const char* csv_path)
+                      const char* csv_path,
+                      size_t elem_bytes_ab = sizeof(float),
+                      size_t elem_bytes_cd = sizeof(float))
 {
     printf("%s roofline sweep (%d iters, %d warmup)\n", label, ITERS, WARMUP);
     printf("%-6s  %9s  %9s  %11s  %9s\n",
@@ -29,10 +31,8 @@ static void run_sweep(const char* label, BenchmarkFn fn,
         float avg_ms = fn(S, h_A, h_B);
 
         double flops = 2.0 * S * S * S;
-        double bytes = ((double)S * S
-                      + (double)S * S
-                      + 2.0 * S * S)
-                     * sizeof(float);
+        double bytes = 2.0 * S * S * elem_bytes_ab    // A + B reads
+                      + 2.0 * S * S * elem_bytes_cd;   // C read + D write
         double ai        = flops / bytes;
         double gflops    = flops / (avg_ms * 1e-3) / 1e9;
         double bandwidth = bytes / (avg_ms * 1e-3) / 1e9;
@@ -65,8 +65,11 @@ int main() {
     run_sweep("Coalesced", benchmark_coalesced, sizes, N_SIZES, h_A, h_B, "output/coalesced.csv");
     run_sweep("cuBLAS",    benchmark_cublas,    sizes, N_SIZES, h_A, h_B, "output/cublas.csv");
     run_sweep("Coarsened", benchmark_coarsened, sizes, N_SIZES, h_A, h_B, "output/coarsened.csv");
-    run_sweep("CUTLASS",   benchmark_cutlass,   sizes, N_SIZES, h_A, h_B, "output/cutlass.csv");
+    run_sweep("CUTLASS_fp32",   benchmark_cutlass_fp32,   sizes, N_SIZES, h_A, h_B, "output/cutlass_fp32.csv");
 
+    // CUTLASS version for half_t (2-byte) operands for A/B; C/D stay float (4 bytes).
+    run_sweep("CUTLASS_fp16",   benchmark_cutlass_fp16,   sizes, N_SIZES, h_A, h_B, "output/cutlass_fp16.csv", 2, sizeof(float));
+    
     // CBLAS runs on CPU; cap at 4096 to keep runtime reasonable
     const int cblas_sizes[] = {128, 256, 512, 1024, 2048, 4096, 8192};
     const int N_CBLAS = sizeof(cblas_sizes) / sizeof(cblas_sizes[0]);
