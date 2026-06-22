@@ -11,19 +11,19 @@ kernels = {
     "Naive":     "naive.csv",
     "Coalesced": "coalesced.csv",
     "Tiled":     "tiled.csv",
-    "Coarsened": "coarsened.csv",
     "cuBLAS":    "cublas.csv",
-    "CUTLASS":   "cutlass_fp32.csv",
+    "CUTLASS (TF32 TensorOp)": "cutlass_tf32.csv",
 }
 
 colors = {
     "Naive":     "C0",
     "Coalesced": "C1",
     "Tiled":     "C2",
-    "Coarsened": "C3",
     "cuBLAS":    "C4",
     "cBLAS":     "C6",
-    "CUTLASS":   "C5",
+    "CUTLASS (FP32 SIMT)": "C5",
+    "CUTLASS (TF32 TensorOp)": "C7",
+    "CUTLASS (FP16 TensorOp)": "C8",
 }
 
 def load(filename):
@@ -76,7 +76,7 @@ plt.savefig(out_path, dpi=150)
 print(f"Saved {out_path}")
 plt.show()
 
-def plot_comparison(series, title, out_name):
+def plot_comparison(series, title, out_name, note=None):
     fig, ax = plt.subplots(figsize=(7, 5))
     fig.suptitle(title)
 
@@ -102,6 +102,12 @@ def plot_comparison(series, title, out_name):
     sec.set_xlabel("Arithmetic Intensity (FLOP/MB)")
 
     fig.tight_layout()
+
+    if note:
+        fig.subplots_adjust(bottom=0.18)
+        fig.text(0.5, 0.02, note, ha="center", va="bottom", fontsize=8,
+                 style="italic", wrap=True)
+
     out_path = OUTPUT_DIR / out_name
     plt.savefig(out_path, dpi=150)
     print(f"Saved {out_path}")
@@ -137,7 +143,21 @@ plot_comparison(
 
 # --- cuBLAS vs CUTLASS throughput comparison ---
 plot_comparison(
-    {"cuBLAS": "cublas.csv", "CUTLASS": "cutlass_fp32.csv"},
+    {"cuBLAS": "cublas.csv", "CUTLASS (FP32 SIMT)": "cutlass_fp32.csv"},
     "SGEMM Roofline Analysis - Nvidia GPU A100",
     "roofline_cublas_cutlass.png",
+)
+
+# --- CUTLASS FP32 vs TF32 vs FP16 vs cuBLAS throughput comparison ---
+plot_comparison(
+    {
+        "CUTLASS (FP32 SIMT)":     "cutlass_fp32.csv",
+        "CUTLASS (TF32 TensorOp)": "cutlass_tf32.csv",
+        "CUTLASS (FP16 TensorOp)": "cutlass_fp16.csv",
+        "cuBLAS":                  "cublas.csv",
+    },
+    "SGEMM Roofline Analysis - Nvidia GPU A100",
+    "roofline_cutlass_variants.png",
+    note="Note: top axis assumes 4-byte operands (AI = S/8); FP16 TensorOp uses "
+         "fp16 A/B and its true AI is ~1.33x higher than shown here.",
 )

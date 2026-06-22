@@ -67,6 +67,9 @@ int main() {
     run_sweep("Coarsened", benchmark_coarsened, sizes, N_SIZES, h_A, h_B, "output/coarsened.csv");
     run_sweep("CUTLASS_fp32",   benchmark_cutlass_fp32,   sizes, N_SIZES, h_A, h_B, "output/cutlass_fp32.csv");
 
+    // CUTLASS version using tf32 tensor cores; A/B are bitcast (still 4 bytes), not narrowed.
+    run_sweep("CUTLASS_tf32",   benchmark_cutlass_tf32,   sizes, N_SIZES, h_A, h_B, "output/cutlass_tf32.csv");
+
     // CUTLASS version for half_t (2-byte) operands for A/B; C/D stay float (4 bytes).
     run_sweep("CUTLASS_fp16",   benchmark_cutlass_fp16,   sizes, N_SIZES, h_A, h_B, "output/cutlass_fp16.csv", 2, sizeof(float));
     
