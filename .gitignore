@@ -188,3 +188,6 @@ external
 
 # results and analysis
 *.deb
+
+# untracked local project
+cuda-performance/
