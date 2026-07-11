@@ -143,6 +143,8 @@ ENV/
 env.bak/
 venv.bak/
 
+*.nsys-rep
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -185,4 +187,4 @@ outputs
 external
 
 # results and analysis
-results
+*.deb
