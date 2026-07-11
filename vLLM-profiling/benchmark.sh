@@ -10,8 +10,16 @@ source ${THIS_DIR}/.venv/bin/activate
 
 python ${THIS_DIR}/bench.py
 
-# now the real profiled run
-${NSIGHT_SYSTEMS_CLI_PATH}/${CAPPED_NSIGHT_SYS_VERSION}/bin/nsys profile \
+# # now the real profiled run
+# ${NSIGHT_SYSTEMS_CLI_PATH}/${CAPPED_NSIGHT_SYS_VERSION}/bin/nsys profile \
+#   --trace=cuda,nvtx,osrt \
+#   --cuda-graph-trace=node \
+#   --output=vllm_llama3_8b_bs32 \
+#   --force-overwrite=true \
+#   python ${THIS_DIR}/bench.py
+
+
+nsys profile \
   --trace=cuda,nvtx,osrt \
   --cuda-graph-trace=node \
   --output=vllm_llama3_8b_bs32 \
